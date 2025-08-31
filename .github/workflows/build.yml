@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Needed to push tags back
+          fetch-depth: 0  # Needed for tags
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -30,16 +30,7 @@ jobs:
         run: |
           python increment_version.py
           echo "VERSION=$(python -c 'from version import VERSION; print(VERSION)')" >> $GITHUB_ENV
-
-      - name: Tag commit
-        if: github.ref == 'refs/heads/main'
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git tag -a "v$VERSION" -m "Auto-tag version $VERSION"
-          git push origin "v$VERSION"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo "RELEASE_TAG=v$VERSION" >> $GITHUB_ENV
 
       - name: Build executable
         run: cmd /c build.bat
@@ -50,18 +41,19 @@ jobs:
           name: FFastGPU-exe
           path: dist/FFastGPU.exe
 
-      - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Create GitHub Release (draft)
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_TAG }}
+          draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Asset
-        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
           files: dist/FFastGPU.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

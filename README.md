@@ -12,7 +12,7 @@ FFastGPU is a Windows GUI wrapper for FFmpeg that fully utilizes NVIDIA GPU enco
 - Built as a single executable with PyInstaller
 
 ## Installation
-Download the latest release from the [Releases page](https://github.com/Msadr471/FFastGPU/releases).
+Download the latest release from the [Releases page](https://github.com/Msadr471/FFastGPU_FFmpeg/releases).
 
 ### System Requirements
 - Windows 10/11

@@ -29,7 +29,8 @@ jobs:
         id: version
         run: |
           python increment_version.py
-          echo "VERSION=$(python -c 'from version import VERSION; print(VERSION)')" >> $GITHUB_ENV
+          VERSION=$(python -c 'from version import VERSION; print(VERSION)')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "RELEASE_TAG=v$VERSION" >> $GITHUB_ENV
 
       - name: Build executable
@@ -41,14 +42,23 @@ jobs:
           name: FFastGPU-exe
           path: dist/FFastGPU.exe
 
+      - name: Push tag (for release)
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git tag -a "${{ env.RELEASE_TAG }}" -m "Auto-tag version ${{ env.VERSION }}"
+          git push origin "${{ env.RELEASE_TAG }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} # <-- Use a PAT with repo permissions
+
       - name: Create GitHub Release (draft)
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.RELEASE_TAG }}
           name: ${{ env.RELEASE_TAG }}
-          draft: true
+          draft: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} # <-- Use the same PAT
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
@@ -56,4 +66,4 @@ jobs:
           tag_name: ${{ env.RELEASE_TAG }}
           files: dist/FFastGPU.exe
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} # <-- Use the same PAT

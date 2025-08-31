@@ -2,6 +2,9 @@
 echo Building FFastGPU...
 echo.
 
+if exist dist rmdir /s /q dist
+if exist build rmdir /s /q build
+
 REM Check if PyInstaller is installed
 pyinstaller --version >nul 2>&1
 if errorlevel 1 (

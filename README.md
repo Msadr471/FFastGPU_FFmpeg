@@ -16,9 +16,8 @@ Download the latest release from the [Releases page](https://github.com/Msadr471
 
 ### System Requirements
 - Windows 10/11
-- NVIDIA GPU with supported drivers
+- NVIDIA GPU with supported drivers (ENC/DEC Video Eng)
 - FFmpeg and FFprobe installed in system PATH
-- NVIDIA System Management Interface (nvidia-smi) for monitoring
 
 ## Usage
 1. Launch FFastGPU.exe

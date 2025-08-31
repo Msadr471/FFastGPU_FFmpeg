@@ -1,0 +1,18 @@
+
+---
+
+### 2. LICENSE
+Pick one depending on your intent:
+- **MIT** → do anything, just keep attribution (most common for Python tools).
+- **GPLv3** → keeps derivatives open-source.
+- **Apache 2.0** → similar to MIT but with patent protection.
+
+Example MIT license file:
+
+```text
+MIT License
+
+Copyright (c) 2025 [Your Name]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+...

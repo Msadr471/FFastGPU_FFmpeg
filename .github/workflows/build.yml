@@ -3,9 +3,6 @@ name: Build and Release FFastGPU
 on:
   push:
     branches: [ main ]
-    # Trigger release workflow on tags too
-    tags:
-      - 'v*.*.*'
   pull_request:
 
 jobs:
@@ -15,6 +12,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed to push tags back
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -26,6 +25,21 @@ jobs:
           pip install --upgrade pip
           pip install pyinstaller
 
+      - name: Increment version
+        id: version
+        run: |
+          python increment_version.py
+          echo "VERSION=$(python -c "import version; print(version.__version__)")" >> $GITHUB_ENV
+
+      - name: Tag commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git tag -a "v$VERSION" -m "Auto-tag version $VERSION"
+          git push origin "v$VERSION"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build executable
         run: cmd /c build.bat
 
@@ -36,15 +50,13 @@ jobs:
           path: dist/FFastGPU.exe
 
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: v${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Asset
-        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
           files: dist/FFastGPU.exe

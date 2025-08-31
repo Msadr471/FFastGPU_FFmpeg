@@ -25,10 +25,41 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Set version environment variables
+      - name: Get latest release version
+        id: get_version
         run: |
-          echo "VERSION=0.0.0.3" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "RELEASE_TAG=v0.0.0.3" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          # Get the latest release tag or default to v0.0.0.0
+          $latestTag = (git tag --list "v*" | Sort-Object {[version]($_ -replace '^v', '')} -Descending | Select-Object -First 1)
+          if (-not $latestTag) {
+            $latestTag = "v0.0.0.0"
+          }
+          echo "CURRENT_VERSION=$latestTag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "current_version=$latestTag" >> $env:GITHUB_OUTPUT
+
+      - name: Increment version number
+        id: increment_version
+        run: |
+          # Extract version numbers from tag (remove 'v' prefix)
+          $version = "${{ env.CURRENT_VERSION }}".Substring(1)
+          $versionParts = $version -split '\.'
+          
+          # Increment patch version (0.0.0.X)
+          $major = [int]$versionParts[0]
+          $minor = [int]$versionParts[1]
+          $build = [int]$versionParts[2]
+          $revision = [int]$versionParts[3] + 1
+          
+          $newVersion = "$major.$minor.$build.$revision"
+          $newTag = "v$newVersion"
+          
+          echo "NEW_VERSION=$newVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "RELEASE_TAG=$newTag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "new_version=$newVersion" >> $env:GITHUB_OUTPUT
+          echo "release_tag=$newTag" >> $env:GITHUB_OUTPUT
+          
+          # Update version.py file
+          (Get-Content version.py) -replace 'VERSION = ".*"', 'VERSION = "$newVersion"' | Set-Content version.py
+          Write-Host "Updated version.py to $newVersion"
 
       - name: Build executable
         run: cmd /c build.bat
@@ -39,19 +70,38 @@ jobs:
           name: FFastGPU-exe
           path: dist/FFastGPU.exe
 
-      - name: Create GitHub Release (draft)
+      - name: Create GitHub Release
+        if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.RELEASE_TAG }}
-          name: ${{ env.RELEASE_TAG }}
-          draft: true
+          name: FFastGPU ${{ env.RELEASE_TAG }}
+          body: |
+            Automatic release of FFastGPU ${{ env.RELEASE_TAG }}
+            
+            Features:
+            - GPU-accelerated video encoding with FFmpeg
+            - Real-time system monitoring
+            - Batch processing support
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Asset
+        if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.RELEASE_TAG }}
           files: dist/FFastGPU.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit version update
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add version.py
+          git commit -m "Bump version to ${{ env.RELEASE_TAG }}"
+          git push origin main

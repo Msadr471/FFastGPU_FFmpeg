@@ -30,7 +30,7 @@ REM Run PyInstaller with all parameters
 echo Starting PyInstaller build...
 pyinstaller --clean --onefile --windowed ^
     --name "FFastGPU" ^
-    --add-binary "C:\Windows\System32\nvidia-smi.exe;." ^
+    --add-binary "res/nvidia-smi.exe;." ^
     --version-file version_info.txt ^
     FFastGPU.py
 

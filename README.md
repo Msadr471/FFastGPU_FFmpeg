@@ -31,8 +31,9 @@ Download the latest release from the [Releases page](https://github.com/Msadr471
 ## Build Instructions (Developers)
 
 ### Requirements:
-- Python 3.8+
+- Python 3.11+
 - PyInstaller
+- PyQt5
 - Dependencies in requirements.txt
 
 ### Build steps:
@@ -40,7 +41,8 @@ Download the latest release from the [Releases page](https://github.com/Msadr471
 2. Install dependencies:
 ```bash
 pip install -r requirements.txt
-Run the build script:
-
+```
+3. Run the build script:
 ```bash
-build.bat
+./build.bat
+```

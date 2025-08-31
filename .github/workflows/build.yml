@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install pyinstaller
+          pip install -r requirements.txt
 
       - name: Increment version
         id: version

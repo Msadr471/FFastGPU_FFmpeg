@@ -14,14 +14,6 @@ if errorlevel 1 (
     exit /b 1
 )
 
-REM Auto-increment version number
-python increment_version.py
-if errorlevel 1 (
-    echo Error: Failed to increment version!
-    pause
-    exit /b 1
-)
-
 REM Check if nvidia-smi.exe exists
 if not exist "C:\Windows\System32\nvidia-smi.exe" (
     echo Warning: nvidia-smi.exe not found in System32!
